@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bible Book Sorter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 50px;
+        }
+        .category {
+            margin-bottom: 30px;
+        }
+        .category h2 {
+            background-color: #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .books {
+            margin: 0 auto;
+            list-style-type: none;
+            padding: 0;
+        }
+        .books li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        button {
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bible Book Sorter</h1>
+    <div id="container">
+        <!-- JavaScript will populate this container -->
+    </div>
+
+    <script>
+        const correctOrder = {
+            "Torah": ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy"],
+            "Historical Books": ["Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther"],
+            "Books of Poetry": ["Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Solomon"],
+            "Major Prophets": ["Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel"],
+            "Minor Prophets": ["Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi"],
+            "Gospels": ["Matthew", "Mark", "Luke", "John"],
+            "Acts": ["Acts"],
+            "Letters": ["Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude"],
+            "Revelation": ["Revelation"]
+        };
+
+        const bibleSections = JSON.parse(JSON.stringify(correctOrder)); // Clone the correct order for randomization
+
+        const container = document.getElementById('container');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function populateSections() {
+            for (let section in bibleSections) {
+                let sectionDiv = document.createElement('div');
+                sectionDiv.className = 'category ' + section.replace(/ /g, "");
+
+                let header = document.createElement('h2');
+                header.textContent = section;
+                sectionDiv.appendChild(header);
+
+                let list = document.createElement('ul');
+                list.className = 'books';
+
+                shuffleArray(bibleSections[section]);
+                bibleSections[section].forEach(book => {
+                    let listItem = document.createElement('li');
+                    listItem.textContent = book;
+                    listItem.draggable = true;
+                    listItem.addEventListener('dragstart', dragStart);
+                    listItem.addEventListener('dragover', dragOver);
+                    listItem.addEventListener('drop', drop);
+                    listItem.addEventListener('dragend', dragEnd);
+                    list.appendChild(listItem);
+                });
+
+                sectionDiv.appendChild(list);
+
+                let checkButton = document.createElement('button');
+                checkButton.textContent = 'Check Order';
+                checkButton.onclick = function() { checkOrder(section); };
+                sectionDiv.appendChild(checkButton);
+
+                container.appendChild(sectionDiv);
+            }
+        }
+
+        let draggedItem = null;
+
+        function dragStart(e) {
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = "0.5", 0);
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            this.style.opacity = "1";
+            if (this.parentNode === draggedItem.parentNode) {
+                let allItems = Array.from(this.parentNode.children);
+                let draggedIndex = allItems.indexOf(draggedItem);
+                let thisIndex = allItems.indexOf(this);
+                
+                if (draggedIndex > thisIndex) {
+                    this.parentNode.insertBefore(draggedItem, this);
+                } else {
+                    this.parentNode.insertBefore(draggedItem, this.nextSibling);
+                }
+            }
+        }
+
+        function dragEnd() {
+            this.style.opacity = "1";
+        }
+
+        function checkOrder(section) {
+            let originalOrder = correctOrder[section];
+            let listItems = Array.from(container.querySelector(`.${section.replace(/ /g, "")} .books`).children);
+            listItems.forEach((li, index) => {
+                li.style.backgroundColor = li.textContent === originalOrder[index] ? 'lightgreen' : 'salmon';
+            });
+        }
+
+        populateSections();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
